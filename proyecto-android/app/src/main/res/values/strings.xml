@@ -339,4 +339,5 @@
     <string name="ayuda_modo_adb_titulo">Modo avanzado</string>
     <string name="ayuda_modo_adb">Una app normal no puede quitar ni desactivar apps del sistema. La depuración inalámbrica de Android sí puede, y este modo la usa en este mismo teléfono.\n\nEmparejas una vez con el código que muestra Android y después conectas cuando quieras. Vigía solo ejecuta las órdenes del plan de limpieza y las de restaurar, y se niega a tocar apps esenciales.\n\nSi se reinicia el teléfono o cambias de wifi, la conexión se pierde y hay que volver a pulsar «Conectar».</string>
     <string name="hint_puerto_con">Puerto de conexión (solo si no se detecta solo)</string>
+    <string name="restaurada_ok">Restaurada: la app ha vuelto.</string>
 </resources>
