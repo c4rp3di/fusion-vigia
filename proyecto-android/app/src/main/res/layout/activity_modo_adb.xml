@@ -100,6 +100,15 @@
             android:text="@string/adb_paso2"
             android:textSize="13sp" />
 
+        <EditText
+            android:id="@+id/etPuertoCon"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_puerto_con"
+            android:importantForAutofill="no"
+            android:inputType="number"
+            android:maxLength="5" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnConectarAdb"
             style="@style/Widget.Material3.Button.TonalButton"
