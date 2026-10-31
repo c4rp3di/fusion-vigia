@@ -28,6 +28,7 @@ class ModoAdbActivity : AppCompatActivity() {
     private lateinit var registro: TextView
     private lateinit var etPuerto: EditText
     private lateinit var etCodigo: EditText
+    private lateinit var etPuertoCon: EditText
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,6 +38,7 @@ class ModoAdbActivity : AppCompatActivity() {
         registro = findViewById(R.id.adbRegistro)
         etPuerto = findViewById(R.id.etPuertoPar)
         etCodigo = findViewById(R.id.etCodigoPar)
+        etPuertoCon = findViewById(R.id.etPuertoCon)
 
         findViewById<MaterialButton>(R.id.btnVolver).setOnClickListener { finish() }
         findViewById<MaterialButton>(R.id.btnAbrirDesarrollo).setOnClickListener { abrirDesarrollo() }
@@ -100,10 +102,16 @@ class ModoAdbActivity : AppCompatActivity() {
             Toast.makeText(this, R.string.adb_no_disponible, Toast.LENGTH_LONG).show()
             return
         }
+        val textoPuerto = etPuertoCon.text.toString().trim()
+        val puertoManual = if (textoPuerto.isEmpty()) null else textoPuerto.toIntOrNull()
+        if (textoPuerto.isNotEmpty() && (puertoManual == null || puertoManual < 1 || puertoManual > 65535)) {
+            Toast.makeText(this, R.string.adb_datos_invalidos, Toast.LENGTH_LONG).show()
+            return
+        }
         estado.setText(R.string.adb_conectando)
         lifecycleScope.launch {
             val resultado = try {
-                if (GestorAdb.conectar(applicationContext)) "conectado" else "sin conexión"
+                if (GestorAdb.conectar(applicationContext, puertoManual)) "conectado" else "sin conexión"
             } catch (e: Exception) {
                 "error: " + e.javaClass.simpleName + " " + (e.message ?: "")
             }
