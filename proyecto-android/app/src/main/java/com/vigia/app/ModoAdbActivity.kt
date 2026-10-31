@@ -15,6 +15,7 @@ import com.google.android.material.button.MaterialButton
 import com.vigia.app.adb.GestorAdb
 import com.vigia.app.util.Ayuda
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -170,11 +171,31 @@ class ModoAdbActivity : AppCompatActivity() {
                         "error: " + e.javaClass.simpleName + " " + (e.message ?: "")
                     }
                     registro.text = orden + "\n" + salida
-                    Toast.makeText(this@ModoAdbActivity, R.string.orden_enviada, Toast.LENGTH_LONG).show()
+                    delay(500)
+                    val vuelta = restaurada(app)
+                    Toast.makeText(
+                        this@ModoAdbActivity,
+                        if (vuelta) R.string.restaurada_ok else R.string.orden_enviada,
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
+    }
+
+    @Suppress("DEPRECATION")
+    private fun restaurada(app: Restaurable): Boolean {
+        return try {
+            val info = packageManager.getApplicationInfo(app.paquete, PackageManager.MATCH_UNINSTALLED_PACKAGES)
+            if (app.quitada) {
+                (info.flags and ApplicationInfo.FLAG_INSTALLED) != 0
+            } else {
+                packageManager.getApplicationEnabledSetting(app.paquete) != PackageManager.COMPONENT_ENABLED_STATE_DISABLED_USER
+            }
+        } catch (e: Exception) {
+            false
+        }
     }
 
     private fun olvidar() {
