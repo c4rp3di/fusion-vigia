@@ -143,9 +143,8 @@ class PlanLimpiezaActivity : AppCompatActivity() {
                     if (bien) break
                 }
                 if (bien) PlanLimpieza.quitar(this@PlanLimpiezaActivity, e.paquete)
-                val detalle = if (salida.isEmpty()) "sin respuesta" else salida.take(160)
                 informe.append(if (bien) "✓ " else "✗ ").append(e.etiqueta).append(": ")
-                    .append(if (bien) "hecho (" + detalle + ")" else detalle).append('\n')
+                    .append(explicarSalida(salida, bien)).append('\n')
             }
             refrescar()
             AlertDialog.Builder(this@PlanLimpiezaActivity)
@@ -154,6 +153,16 @@ class PlanLimpiezaActivity : AppCompatActivity() {
                 .setPositiveButton(android.R.string.ok, null)
                 .show()
         }
+    }
+
+    /** Traduce lo que imprime el sistema a un texto que se entienda. */
+    private fun explicarSalida(salida: String, bien: Boolean): String {
+        if (salida.contains("not installed for")) return "ya estaba quitada"
+        if (salida.contains("disabled-user")) return "desactivada"
+        if (salida.contains("Success")) return "hecho"
+        if (bien) return "hecho (comprobado en el sistema)"
+        if (salida.isEmpty()) return "sin respuesta; vuelve a intentarlo"
+        return salida.take(160)
     }
 
     @Suppress("DEPRECATION")
