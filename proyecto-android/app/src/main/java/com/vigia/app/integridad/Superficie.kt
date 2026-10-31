@@ -86,6 +86,22 @@ object Superficie {
             }
         )
 
+        // ---- depuración inalámbrica (Android 11 o superior) ----
+        if (Build.VERSION.SDK_INT >= 30) {
+            val wifiAdb = ajusteGlobal(contexto, "adb_wifi_enabled") == 1
+            res.add(
+                if (wifiAdb) {
+                    Punto(
+                        "Depuración inalámbrica activada",
+                        "Permite que los dispositivos ya emparejados controlen el teléfono por wifi. Si no la estás usando (por ejemplo, con el modo avanzado de Vigía), apágala.",
+                        Punto.REVISAR, Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS, "Abrir opciones de desarrollador"
+                    )
+                } else {
+                    Punto("Depuración inalámbrica", "Está apagada.", Punto.OK, null, "")
+                }
+            )
+        }
+
         // ---- certificados instalados por el usuario ----
         val certs = certificadosDeUsuario()
         res.add(
