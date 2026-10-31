@@ -317,7 +317,7 @@
     <string name="hint_codigo_par">Código de 6 dígitos</string>
     <string name="emparejar">Emparejar</string>
     <string name="adb_paso2_titulo">2. Conectar</string>
-    <string name="adb_paso2">Con la depuración inalámbrica activada, pulsa «Conectar». Tendrás que volver a conectar cada vez que reinicies el teléfono o cambies de red wifi; si deja de funcionar, activa de nuevo la depuración inalámbrica.</string>
+    <string name="adb_paso2">Con la depuración inalámbrica activada, pulsa «Conectar»: Vigía intenta detectar solo el puerto de conexión. Si no lo consigue, escribe el que aparece en la pantalla principal de Depuración inalámbrica, junto a «Dirección IP y puerto» (los números tras los dos puntos; es distinto del de emparejamiento). Tendrás que volver a conectar cada vez que reinicies el teléfono o cambies de red wifi.</string>
     <string name="conectar">Conectar</string>
     <string name="adb_paso3_titulo">3. Usar y deshacer</string>
     <string name="adb_paso3">Con la conexión activa, el plan de limpieza puede ejecutarse desde Vigía. Aquí puedes devolver las apps que quitaste o desactivaste.</string>
@@ -338,4 +338,5 @@
     <string name="resultado_plan_nota">Las apps correctas salen del plan. Las que fallaron se quedan para reintentarlo.</string>
     <string name="ayuda_modo_adb_titulo">Modo avanzado</string>
     <string name="ayuda_modo_adb">Una app normal no puede quitar ni desactivar apps del sistema. La depuración inalámbrica de Android sí puede, y este modo la usa en este mismo teléfono.\n\nEmparejas una vez con el código que muestra Android y después conectas cuando quieras. Vigía solo ejecuta las órdenes del plan de limpieza y las de restaurar, y se niega a tocar apps esenciales.\n\nSi se reinicia el teléfono o cambias de wifi, la conexión se pierde y hay que volver a pulsar «Conectar».</string>
+    <string name="hint_puerto_con">Puerto de conexión (solo si no se detecta solo)</string>
 </resources>
