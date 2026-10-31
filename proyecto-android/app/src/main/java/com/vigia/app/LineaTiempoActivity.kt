@@ -210,17 +210,34 @@ class LineaTiempoActivity : AppCompatActivity() {
             android.widget.Toast.makeText(this, R.string.csv_vacio, android.widget.Toast.LENGTH_LONG).show()
             return
         }
-        val opciones = arrayOf(
-            getString(R.string.csv_sanitizada_hora),
-            getString(R.string.csv_sanitizada_minuto),
-            getString(R.string.csv_cruda)
-        )
-        AlertDialog.Builder(this)
+        // Un diálogo con mensaje no muestra su lista de opciones, así que las opciones y la explicación van en una vista propia.
+        val margen = (16 * resources.displayMetrics.density).toInt()
+        val contenido = android.widget.LinearLayout(this)
+        contenido.orientation = android.widget.LinearLayout.VERTICAL
+        contenido.setPadding(margen, margen / 2, margen, 0)
+
+        val dialogo = AlertDialog.Builder(this)
             .setTitle(R.string.exportar_csv)
-            .setMessage(getString(R.string.aviso_csv_modos, visibles.size))
-            .setItems(opciones) { _, cual -> exportarCsv(cual) }
             .setNegativeButton(android.R.string.cancel, null)
-            .show()
+            .create()
+
+        val opciones = intArrayOf(R.string.csv_sanitizada_hora, R.string.csv_sanitizada_minuto, R.string.csv_cruda)
+        for (i in opciones.indices) {
+            contenido.addView(Ayuda.enlace(this, getString(opciones[i])) {
+                dialogo.dismiss()
+                exportarCsv(i)
+            })
+        }
+        val explicacion = android.widget.TextView(this)
+        explicacion.text = getString(R.string.aviso_csv_modos, visibles.size)
+        explicacion.textSize = 13f
+        explicacion.setPadding(0, margen / 2, 0, margen / 2)
+        contenido.addView(explicacion)
+
+        val desplazable = android.widget.ScrollView(this)
+        desplazable.addView(contenido)
+        dialogo.setView(desplazable)
+        dialogo.show()
     }
 
     /** modo 0 = sanitizada con la hora redondeada a la hora, 1 = sanitizada al minuto, 2 = cruda. */
