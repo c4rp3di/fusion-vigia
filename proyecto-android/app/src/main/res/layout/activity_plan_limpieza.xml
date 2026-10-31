@@ -97,6 +97,21 @@
             android:layout_marginTop="4dp"
             android:text="@string/vaciar_plan" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnEjecutarAdb"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/ejecutar_plan_adb" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnModoAvanzado"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/abrir_modo_avanzado" />
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
