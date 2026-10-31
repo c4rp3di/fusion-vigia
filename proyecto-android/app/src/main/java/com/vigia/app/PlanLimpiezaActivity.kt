@@ -12,6 +12,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
+import com.vigia.app.adb.GestorAdb
 import com.vigia.app.integridad.PlanLimpieza
 import com.vigia.app.util.Ayuda
 import com.vigia.app.util.Formato
@@ -58,6 +59,10 @@ class PlanLimpiezaActivity : AppCompatActivity() {
                 startActivity(Intent.createChooser(envio, getString(R.string.compartir_plan)))
             }
         }
+        findViewById<MaterialButton>(R.id.btnEjecutarAdb).setOnClickListener { ejecutarConAdb() }
+        findViewById<MaterialButton>(R.id.btnModoAvanzado).setOnClickListener {
+            startActivity(Intent(this, ModoAdbActivity::class.java))
+        }
         findViewById<MaterialButton>(R.id.btnVaciarPlan).setOnClickListener {
             AlertDialog.Builder(this)
                 .setTitle(R.string.vaciar_plan)
@@ -70,6 +75,73 @@ class PlanLimpiezaActivity : AppCompatActivity() {
                 .show()
         }
         refrescar()
+    }
+
+    private fun ejecutarConAdb() {
+        val lista = PlanLimpieza.leer(this)
+        if (lista.isEmpty()) {
+            Toast.makeText(this, R.string.plan_vacio, Toast.LENGTH_LONG).show()
+            return
+        }
+        if (!GestorAdb.disponible()) {
+            Toast.makeText(this, R.string.adb_no_disponible, Toast.LENGTH_LONG).show()
+            return
+        }
+        lifecycleScope.launch {
+            val vivo = GestorAdb.verificar()
+            if (!vivo) {
+                AlertDialog.Builder(this@PlanLimpiezaActivity)
+                    .setTitle(R.string.adb_sin_conexion)
+                    .setMessage(R.string.adb_reconectar)
+                    .setPositiveButton(R.string.abrir_modo_avanzado) { _, _ ->
+                        startActivity(Intent(this@PlanLimpiezaActivity, ModoAdbActivity::class.java))
+                    }
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show()
+                return@launch
+            }
+            val resumen = lista.joinToString("\n") { e ->
+                "• " + e.etiqueta + " → " + (if (e.accion == PlanLimpieza.DESACTIVAR) "desactivar" else "quitar para este usuario")
+            }
+            AlertDialog.Builder(this@PlanLimpiezaActivity)
+                .setTitle(R.string.ejecutar_plan_adb)
+                .setMessage(getString(R.string.confirmar_ejecutar_plan, lista.size, resumen))
+                .setPositiveButton(R.string.ejecutar) { _, _ -> lanzarPlan(lista) }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
+        }
+    }
+
+    private fun lanzarPlan(lista: List<PlanLimpieza.Entrada>) {
+        lifecycleScope.launch {
+            val informe = StringBuilder()
+            for (e in lista) {
+                val motivo = PlanLimpieza.motivoCritica(this@PlanLimpiezaActivity, e.paquete)
+                if (motivo != null) {
+                    informe.append("✗ ").append(e.etiqueta).append(": omitida (").append(motivo).append(")\n")
+                    continue
+                }
+                val orden = if (e.accion == PlanLimpieza.DESACTIVAR) {
+                    "pm disable-user --user 0 " + e.paquete
+                } else {
+                    "pm uninstall --user 0 " + e.paquete
+                }
+                val salida = try {
+                    GestorAdb.ejecutar(orden)
+                } catch (ex: Exception) {
+                    "error: " + ex.javaClass.simpleName
+                }
+                val bien = salida.contains("Success") || salida.contains("disabled-user")
+                if (bien) PlanLimpieza.quitar(this@PlanLimpiezaActivity, e.paquete)
+                informe.append(if (bien) "✓ " else "✗ ").append(e.etiqueta).append(": ").append(salida.take(160)).append('\n')
+            }
+            refrescar()
+            AlertDialog.Builder(this@PlanLimpiezaActivity)
+                .setTitle(R.string.resultado_plan)
+                .setMessage(informe.toString() + "\n" + getString(R.string.resultado_plan_nota))
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+        }
     }
 
     private fun refrescar() {
