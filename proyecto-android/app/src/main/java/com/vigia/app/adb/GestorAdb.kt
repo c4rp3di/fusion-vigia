@@ -9,6 +9,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.lang.reflect.InvocationTargetException
 import java.net.NetworkInterface
 import kotlin.coroutines.resume
@@ -95,11 +97,27 @@ object GestorAdb {
         }
     }
 
+    /**
+     * La librería lanza una excepción si el shell termina y cierra el flujo antes de que se lea su salida (una carrera que
+     * afecta sobre todo a órdenes rápidas). Se evita manteniendo el shell un segundo más y tratando el cierre del flujo
+     * como fin normal de la lectura.
+     */
     private fun ejecutarEn(m: AbsAdbConnectionManager, orden: String): String {
-        val flujo = m.openStream("shell:" + orden)
+        val flujo = m.openStream("shell:" + orden + "; sleep 1")
         try {
-            val lector = flujo.openInputStream().bufferedReader(Charsets.UTF_8)
-            return lector.readText().trim()
+            val entrada = flujo.openInputStream()
+            val salida = ByteArrayOutputStream()
+            val buffer = ByteArray(4096)
+            try {
+                while (true) {
+                    val n = entrada.read(buffer)
+                    if (n < 0) break
+                    salida.write(buffer, 0, n)
+                }
+            } catch (e: IOException) {
+                // El flujo se cerró: es el final de la salida.
+            }
+            return salida.toString("UTF-8").trim()
         } finally {
             try {
                 flujo.close()
