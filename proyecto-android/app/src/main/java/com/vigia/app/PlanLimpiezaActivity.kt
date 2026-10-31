@@ -1,6 +1,8 @@
 package com.vigia.app
 
 import android.content.Intent
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
@@ -18,6 +20,7 @@ import com.vigia.app.util.Ayuda
 import com.vigia.app.util.Formato
 import com.vigia.app.util.Portapapeles
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -126,14 +129,23 @@ class PlanLimpiezaActivity : AppCompatActivity() {
                 } else {
                     "pm uninstall --user 0 " + e.paquete
                 }
-                val salida = try {
-                    GestorAdb.ejecutar(orden)
-                } catch (ex: Exception) {
-                    "error: " + ex.javaClass.simpleName
+                var salida = ""
+                var bien = false
+                for (intento in 1..2) {
+                    salida = try {
+                        GestorAdb.ejecutar(orden)
+                    } catch (ex: Exception) {
+                        "error: " + ex.javaClass.simpleName + (if (ex.message.isNullOrEmpty()) "" else " (" + ex.message + ")")
+                    }
+                    delay(500)
+                    // El resultado se comprueba en el propio sistema, no solo en lo que imprime la orden.
+                    bien = aplicado(e) || salida.contains("Success") || salida.contains("disabled-user")
+                    if (bien) break
                 }
-                val bien = salida.contains("Success") || salida.contains("disabled-user")
                 if (bien) PlanLimpieza.quitar(this@PlanLimpiezaActivity, e.paquete)
-                informe.append(if (bien) "✓ " else "✗ ").append(e.etiqueta).append(": ").append(salida.take(160)).append('\n')
+                val detalle = if (salida.isEmpty()) "sin respuesta" else salida.take(160)
+                informe.append(if (bien) "✓ " else "✗ ").append(e.etiqueta).append(": ")
+                    .append(if (bien) "hecho (" + detalle + ")" else detalle).append('\n')
             }
             refrescar()
             AlertDialog.Builder(this@PlanLimpiezaActivity)
@@ -141,6 +153,24 @@ class PlanLimpiezaActivity : AppCompatActivity() {
                 .setMessage(informe.toString() + "\n" + getString(R.string.resultado_plan_nota))
                 .setPositiveButton(android.R.string.ok, null)
                 .show()
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun aplicado(e: PlanLimpieza.Entrada): Boolean {
+        val pm = packageManager
+        return try {
+            if (e.accion == PlanLimpieza.DESACTIVAR) {
+                val s = pm.getApplicationEnabledSetting(e.paquete)
+                s == PackageManager.COMPONENT_ENABLED_STATE_DISABLED_USER || s == PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+            } else {
+                val info = pm.getApplicationInfo(e.paquete, PackageManager.MATCH_UNINSTALLED_PACKAGES)
+                (info.flags and ApplicationInfo.FLAG_INSTALLED) == 0
+            }
+        } catch (ex: PackageManager.NameNotFoundException) {
+            e.accion == PlanLimpieza.DESINSTALAR
+        } catch (ex: Exception) {
+            false
         }
     }
 
