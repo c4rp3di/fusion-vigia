@@ -26,8 +26,8 @@ android {
         applicationId "com.vigia.app"
         minSdk 24
         targetSdk 34
-        versionCode 6
-        versionName "v15.0"
+        versionCode 7
+        versionName "v16.0"
     }
 
     buildFeatures {
@@ -57,4 +57,9 @@ dependencies {
     ksp 'androidx.room:room-compiler:2.6.1'
     implementation 'net.zetetic:sqlcipher-android:4.5.4@aar'
     implementation 'androidx.sqlite:sqlite:2.4.0'
+
+    // Modo avanzado (ADB inalámbrico). Versión fijada: es la que documenta su README.
+    implementation 'com.github.MuntashirAkon:libadb-android:1.0.1'
+    implementation 'com.github.MuntashirAkon:sun-security-android:1.1'
+    implementation 'org.conscrypt:conscrypt-android:2.5.2'
 }
